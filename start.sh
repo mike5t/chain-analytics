@@ -1,19 +1,27 @@
 #!/bin/bash
-# Chain Analytics — start everything
+# Chain Analytics — Rebuilt Next.js Startup Script
 
-cd "$(dirname "$0")"
-source venv/bin/activate
+# Navigate to script directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+cd "$DIR"
 
-echo "Starting dashboard..."
-nohup streamlit run dashboard/app.py --server.port 8501 --server.headless true > /tmp/streamlit.log 2>&1 &
-
-echo "Starting API..."
-nohup uvicorn api.main:app --port 8000 --reload > /tmp/api.log 2>&1 &
-
-sleep 4
+echo "=================================================="
+echo "      Chain Analytics — Rebuilt Full-Stack App     "
+echo "=================================================="
 echo ""
-echo "  Dashboard : http://localhost:8501"
-echo "  API docs  : http://localhost:8000/docs"
+
+# Ensure database exists and is seeded
+if [ ! -f "data/chain_analytics.db" ]; then
+  echo "[db] Database file data/chain_analytics.db not found. Initializing..."
+  npx tsx scripts/update_labels.ts
+  npx tsx scripts/update_sanctions.ts
+  echo ""
+fi
+
+echo "Starting Next.js (Dashboard + API Router)..."
+echo "  URL: http://localhost:3000"
+echo "  API: http://localhost:3000/api/health"
+echo "Press Ctrl+C to stop."
 echo ""
-echo "To share publicly:"
-echo "  ./ngrok http 8501"
+
+npm run dev
